@@ -18,7 +18,7 @@ graal {
     javaVersion("11")
     mainClass("com.github.bjornvester.gww.AppKt")
     outputName("gw")
-    windowsVsEdition("BuildTools")
+    //windowsVsEdition("BuildTools")
     option("--no-fallback")
 }
 
