@@ -20,6 +20,7 @@ jobs:
     #    graalvm-version: '20.2.0'
     #- uses: ilammy/msvc-dev-cmd@v1 # https://github.com/ilammy/msvc-dev-cmd
     - name: Add msbuild to PATH
+      if: ${{ matrix.platform == 'windows-latest' }}
       uses: microsoft/setup-msbuild@v1.0.1 # https://github.com/marketplace/actions/setup-msbuild
     - uses: actions/checkout@v2
     - name: Set up JDK 11
