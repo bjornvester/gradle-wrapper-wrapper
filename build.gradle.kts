@@ -38,8 +38,11 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
     doFirst {
         // Use the GraalVM distribution for compiling the Kotlin classes
-        val extractGraalTask = tasks.getByName("extractGraalTooling", com.palantir.gradle.graal.ExtractGraalTask::class)
-        kotlinOptions.jdkHome = extractGraalTask.outputs.files.singleFile.absolutePath
+        // For some reason, it doesn't work on MacOS though, so in that case, use the same version version as Gradle
+        if (!org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem().isMacOsX) {
+            val extractGraalTask = tasks.getByName("extractGraalTooling", com.palantir.gradle.graal.ExtractGraalTask::class)
+            kotlinOptions.jdkHome = extractGraalTask.outputs.files.singleFile.absolutePath
+        }
     }
 }
 
