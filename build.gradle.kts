@@ -65,9 +65,3 @@ val zipDistribution by tasks.registering(Zip::class) {
     from("$projectDir/LICENSE")
     from("$projectDir/src/main/dist/README.txt")
 }
-
-val dummyDistribution by tasks.registering(Zip::class) {
-    description = "Just a dummy task for quickly testing Github release automation"
-    archiveFileName.set("gw-${getCurrentOperatingSystem().toFamilyName()}.zip")
-    from("$projectDir/src/main/dist/README.txt")
-}
