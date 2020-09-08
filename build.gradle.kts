@@ -1,3 +1,6 @@
+import com.palantir.gradle.graal.ExtractGraalTask
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
+
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.4.0"
     id("com.palantir.graal") version "0.7.1"
@@ -24,7 +27,7 @@ graal {
 
 tasks.withType<Wrapper> {
     gradleVersion = "6.6"
-    distributionType = Wrapper.DistributionType.ALL
+    distributionType = Wrapper.DistributionType.BIN
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -39,8 +42,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     doFirst {
         // Use the GraalVM distribution for compiling the Kotlin classes
         // For some reason, it doesn't work on MacOS though, so in that case, use the same version version as Gradle
-        if (!org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem().isMacOsX) {
-            val extractGraalTask = tasks.getByName("extractGraalTooling", com.palantir.gradle.graal.ExtractGraalTask::class)
+        if (!getCurrentOperatingSystem().isMacOsX) {
+            val extractGraalTask = tasks.getByName("extractGraalTooling", ExtractGraalTask::class)
             kotlinOptions.jdkHome = extractGraalTask.outputs.files.singleFile.absolutePath
         }
     }
@@ -51,4 +54,20 @@ val run by tasks.registering(JavaExec::class) {
     main = "com.github.bjornvester.gww.AppKt"
     classpath = sourceSets["main"].runtimeClasspath
     args = listOf("--version")
+}
+
+val zipDistribution by tasks.registering(Zip::class) {
+    description = "Zips the native image executable"
+    archiveFileName.set("gw-${getCurrentOperatingSystem().toFamilyName()}.zip")
+    val nativeImageTask = tasks.getByName("nativeImage")
+    dependsOn(nativeImageTask)
+    from(nativeImageTask.outputs.files.singleFile.absolutePath)
+    from("$projectDir/LICENSE")
+    from("$projectDir/src/main/dist/README.txt")
+}
+
+val dummyDistribution by tasks.registering(Zip::class) {
+    description = "Just a dummy task for quickly testing Github release automation"
+    archiveFileName.set("gw-${getCurrentOperatingSystem().toFamilyName()}.zip")
+    from("$projectDir/src/main/dist/README.txt")
 }

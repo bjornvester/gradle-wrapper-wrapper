@@ -1,4 +1,6 @@
 # gradle-wrapper-wrapper
+![example workflow name](https://github.com/bjornvester/gradle-wrapper-wrapper/workflows/Build/badge.svg)
+
 This project facilitates executing the Gradle wrapper script in a multi-project. 
 
 It is similar to [gdub](https://github.com/gdubw/gdub) (which only works in Bash) and [gw](https://github.com/srs/gw) (which is written in Go and has no released artifacts).
@@ -9,9 +11,6 @@ Also see https://github.com/gradle/gradle/issues/1368 for an open issue on this.
 ## Using the wrapper-wrapper
 Download the executable from the [release page](https://github.com/bjornvester/gradle-wrapper-wrapper/releases) and put it in a folder of your choice.
 Add the folder to your PATH variable.
-
-*NOTE: Depending on when you read this, I might not have actually made a release yet.
-Come back in a few days and check the progress on it*
 
 You can now type `gw` anywhere in a Gradle multi-project structure to invoke the wrapper script found in the root, just like you would type `gradlew` or `gradle`.
 
