@@ -5,8 +5,8 @@ This project facilitates executing the Gradle wrapper script in a multi-project.
 
 It is similar to [gdub](https://github.com/gdubw/gdub) (which only works in Bash) and [gw](https://github.com/srs/gw) (which is written in Go and has no released artifacts).
 
-Please see the [gdub](https://github.com/gdubw/gdub) project for some reasoning behind the project.
-Also see https://github.com/gradle/gradle/issues/1368 for an open issue on this.
+Please see the [gdub](https://github.com/gdubw/gdub) project for a good explanation of some shortcomings of working with the normal wrapper script in a multi-project.
+Also see [Gradle issue #1368](https://github.com/gradle/gradle/issues/1368) for voting on getting the feature built directly into Gradle.
 
 ## Using the wrapper-wrapper
 Download the executable from the [release page](https://github.com/bjornvester/gradle-wrapper-wrapper/releases) and put it in a folder of your choice.
@@ -45,5 +45,7 @@ It will build a distribution for your local platform in `build/graal/` called `g
 
 ### Contributions
 Contributions are welcome.
+
 If you create a PR, Github will automatically try to build it.
+
 Note that there are no unit tests for the project at the moment though.
