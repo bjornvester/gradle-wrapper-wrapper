@@ -27,23 +27,17 @@ private fun findGradleExecutable(): Path? {
     return findGradleWrapper() ?: findGradleFromPath() ?: findGradleFromWrapperDist()
 }
 
-private fun findGradleWrapper(): Path? {
-    var gradlePath: Path?
-    var currentDirectory = Paths.get(System.getProperty("user.dir"))
-
-    do {
-        gradlePath = currentDirectory.resolve(getGradleWrapperName())
-        if (!Files.isExecutable(gradlePath)) {
-            gradlePath = null
-        }
-        currentDirectory = currentDirectory.parent
-    } while (gradlePath == null && currentDirectory != null)
-
-    return gradlePath
+private tailrec fun findGradleWrapper(currentDirectory: Path? = getCurrentDir()): Path? {
+    return if (currentDirectory == null) {
+        null
+    } else {
+        val gradlePath = currentDirectory.resolve(getGradleWrapperName())
+        if (Files.isExecutable(gradlePath)) gradlePath else findGradleWrapper(currentDirectory.parent)
+    }
 }
 
 private fun findGradleFromPath(): Path? {
-    return System.getenv("PATH")?.split(File.pathSeparator)?.mapNotNull { path ->
+    val gradleExecutablePath = System.getenv("PATH")?.split(File.pathSeparator)?.mapNotNull { path ->
         try {
             Paths.get(path).resolve(getGradleName())
         } catch (ignore: InvalidPathException) {
@@ -51,6 +45,17 @@ private fun findGradleFromPath(): Path? {
             null
         }
     }?.find { Files.isExecutable(it) }
+
+    if (gradleExecutablePath != null) {
+        // Go down from the "bin" directory to be able to extract the version number from the main directory name
+        val gradleVersion = getVersionFromGradlePath(gradleExecutablePath.parent)
+        if (gradleVersion != null) {
+            println("[GW] Using Gradle version $gradleVersion from path: $gradleExecutablePath")
+            return gradleExecutablePath
+        }
+    }
+
+    return null
 }
 
 /**
@@ -60,8 +65,8 @@ private fun findGradleFromPath(): Path? {
  */
 private fun findGradleFromWrapperDist(): Path? {
     // An example of the directory containing the executable could be: [USER]/.gradle/wrapper/dists/gradle-6.6-bin/dflktxzwamd4bv66q00iv4ga9/gradle-6.6/bin
-    var distsPath = Paths.get(System.getProperty("user.home")).resolve(".gradle/wrapper/dists")
-    var executablesMap: MutableMap<Version, Path> = mutableMapOf() // Gradle version to executable path
+    val distsPath = getUserHome().resolve(".gradle/wrapper/dists")
+    val executablesMap: MutableMap<Version, Path> = mutableMapOf() // Gradle version to executable path
 
     if (Files.isDirectory(distsPath)) {
         Files.list(distsPath).forEach { distPath ->
@@ -86,7 +91,8 @@ private fun findGradleFromWrapperDist(): Path? {
         }
     }
 
-    val executableMapEntry = executablesMap.maxByOrNull { entry -> entry.key }
+    // Find the highest version and get the Gradle executable for that version (if any)
+    val executableMapEntry = executablesMap.maxByOrNull { it.key }
 
     if (executableMapEntry != null) {
         // This is mostly a fall-back method. In this case, as the Gradle version is not specified and can be somewhat arbitrary, print out what was found.
@@ -96,17 +102,15 @@ private fun findGradleFromWrapperDist(): Path? {
     return executableMapEntry?.value
 }
 
-private fun getGradleWrapperName(): String {
-    return if (isWindows()) "gradlew.bat" else "gradlew"
-}
+private fun getCurrentDir() = Paths.get(System.getProperty("user.dir"))
 
-private fun getGradleName(): String {
-    return if (isWindows()) "gradle.bat" else "gradle"
-}
+private fun getUserHome() = Paths.get(System.getProperty("user.home"))
 
-private fun isWindows(): Boolean {
-    return System.getProperty("os.name").toLowerCase().contains("windows")
-}
+private fun getGradleName() = if (isWindows()) "gradle.bat" else "gradle"
+
+private fun getGradleWrapperName() = if (isWindows()) "gradlew.bat" else "gradlew"
+
+private fun isWindows() = System.getProperty("os.name").toLowerCase().contains("windows")
 
 /**
  * Note that while this returns a java.lang.Runtime.Version object that represents a Java version, it is (so far) compatible with Gradle versions too.
