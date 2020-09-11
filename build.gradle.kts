@@ -2,7 +2,7 @@ import com.palantir.gradle.graal.ExtractGraalTask
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.4.0"
+    id("org.jetbrains.kotlin.jvm") version "1.4.10"
     id("com.palantir.graal") version "0.7.1"
 }
 
@@ -21,7 +21,10 @@ graal {
     javaVersion("11")
     mainClass("com.github.bjornvester.gww.AppKt")
     outputName("gw")
-    //windowsVsEdition("BuildTools") // Needed for some installations for Windows. Not sure why.
+    if (getCurrentOperatingSystem().isWindows && getWindowsVsVarsPath().get() == "") {
+        // Needed for some installations for Windows
+        windowsVsEdition("BuildTools")
+    }
     option("--no-fallback")
 }
 
@@ -41,8 +44,14 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
     doFirst {
         // Use the GraalVM distribution for compiling the Kotlin classes
-        // For some reason, it doesn't work on MacOS though, so in that case, use the same version version as Gradle
-        if (!getCurrentOperatingSystem().isMacOsX) {
+        if (getCurrentOperatingSystem().isMacOsX) {
+            // For some reason, GraalVM doesn't work on MacOS for compiling the Kotlin source code
+            // So in that case, use the same version version as Gradle
+            // Of cause, we still use GraalVM to generate the final native image
+            if (JavaVersion.current() < JavaVersion.VERSION_11) {
+                throw GradleException("This build must be run with Java 11 or higher")
+            }
+        } else {
             val extractGraalTask = tasks.getByName("extractGraalTooling", ExtractGraalTask::class)
             kotlinOptions.jdkHome = extractGraalTask.outputs.files.singleFile.absolutePath
         }
@@ -58,9 +67,9 @@ val run by tasks.registering(JavaExec::class) {
 
 val zipDistribution by tasks.registering(Zip::class) {
     description = "Zips the native image executable"
-    archiveFileName.set("gw-${getCurrentOperatingSystem().toFamilyName()}.zip")
     val nativeImageTask = tasks.getByName("nativeImage")
     dependsOn(nativeImageTask)
+    archiveFileName.set("gw-${getCurrentOperatingSystem().toFamilyName()}.zip")
     from(nativeImageTask.outputs.files.singleFile.absolutePath)
     from("$projectDir/LICENSE")
     from("$projectDir/src/main/dist/README.txt")
