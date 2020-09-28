@@ -1,11 +1,11 @@
 package com.github.bjornvester.gww
 
 import java.io.File
-import java.lang.Runtime.Version
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.math.max
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
@@ -112,10 +112,32 @@ private fun getGradleWrapperName() = if (isWindows()) "gradlew.bat" else "gradle
 
 private fun isWindows() = System.getProperty("os.name").toLowerCase().contains("windows")
 
-/**
- * Note that while this returns a java.lang.Runtime.Version object that represents a Java version, it is (so far) compatible with Gradle versions too.
- */
 private fun getVersionFromGradlePath(path: Path): Version? {
     val versionString = Regex("gradle-([\\d.]*)").matchEntire(path.fileName.toString())?.groupValues?.last()
-    return if (versionString == null) null else Version.parse(versionString)
+    return if (versionString == null) null else Version(versionString)
+}
+
+/**
+ * Simple version class. Only supports numbers and does not work with text (e.g. "rc-1").
+ */
+private class Version(val version: String) : Comparable<Version> {
+    override fun compareTo(other: Version): Int {
+        val version1Splits = version.split(".")
+        val version2Splits = other.version.split(".")
+        val maxLengthOfVersionSplits = max(version1Splits.size, version2Splits.size)
+        var comparisonResult = 0
+
+        for (i in 0 until maxLengthOfVersionSplits) {
+            val v1 = if (i < version1Splits.size) version1Splits[i].toInt() else 0
+            val v2 = if (i < version2Splits.size) version2Splits[i].toInt() else 0
+            val compare = v1.compareTo(v2)
+
+            if (compare != 0) {
+                comparisonResult = compare
+                break
+            }
+        }
+
+        return comparisonResult
+    }
 }
