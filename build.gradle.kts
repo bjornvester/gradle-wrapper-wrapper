@@ -34,10 +34,6 @@ tasks.withType<Wrapper> {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    // The source and target compatibility only functions as a hint to IntelliJ when importing project for selecting the correct JDK
-    sourceCompatibility = JavaVersion.VERSION_11.toString()
-    targetCompatibility = JavaVersion.VERSION_11.toString()
-
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }

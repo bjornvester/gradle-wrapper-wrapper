@@ -120,7 +120,7 @@ private fun getVersionFromGradlePath(path: Path): Version? {
 /**
  * Simple version class. Only supports numbers and does not work with text (e.g. "rc-1").
  */
-private class Version(val version: String) : Comparable<Version> {
+private data class Version(val version: String) : Comparable<Version> {
     override fun compareTo(other: Version): Int {
         val version1Splits = version.split(".")
         val version2Splits = other.version.split(".")
@@ -139,5 +139,9 @@ private class Version(val version: String) : Comparable<Version> {
         }
 
         return comparisonResult
+    }
+
+    override fun toString(): String {
+        return version
     }
 }
