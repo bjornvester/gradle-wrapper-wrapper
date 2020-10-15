@@ -29,7 +29,7 @@ graal {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "6.6"
+    gradleVersion = "6.7"
     distributionType = Wrapper.DistributionType.BIN
 }
 
