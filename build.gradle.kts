@@ -2,8 +2,8 @@ import com.palantir.gradle.graal.ExtractGraalTask
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.4.10"
-    id("com.palantir.graal") version "0.7.1"
+    id("org.jetbrains.kotlin.jvm") version "1.4.21"
+    id("com.palantir.graal") version "0.7.2"
 }
 
 repositories {
@@ -17,19 +17,25 @@ dependencies {
 
 graal {
     // See https://github.com/palantir/gradle-graal for options
-    graalVersion("20.2.0") // When updating this, remember also to update the cache key with the same value in .github/workflows/gradle.yml
+    graalVersion("20.3.1") // When updating this, remember also to update the cache key with the same value in .github/workflows/gradle.yml
     javaVersion("11")
     mainClass("com.github.bjornvester.gww.AppKt")
     outputName("gw")
+
     if (getCurrentOperatingSystem().isWindows && getWindowsVsVarsPath().get() == "") {
         // Needed for some installations for Windows
         windowsVsEdition("BuildTools")
     }
+
+    option("--install-exit-handlers")
     option("--no-fallback")
+    option("-R:MinHeapSize=2m")
+    option("-R:MaxHeapSize=10m")
+    option("-R:MaxNewSize=1m")
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "6.7"
+    gradleVersion = "6.8"
     distributionType = Wrapper.DistributionType.BIN
 }
 
