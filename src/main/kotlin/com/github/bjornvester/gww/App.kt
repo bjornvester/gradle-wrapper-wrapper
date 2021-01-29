@@ -16,10 +16,11 @@ fun main(args: Array<String>) {
         exitProcess(1)
     } else {
         val fullPath = gradleExecutablePath.toAbsolutePath().toString()
-        ProcessBuilder(fullPath, *args)
-                .inheritIO()
-                .start()
-                .waitFor()
+        val process = ProcessBuilder(fullPath, *args)
+            .inheritIO()
+            .start()
+        Runtime.getRuntime().addShutdownHook(Thread { process.destroy() })
+        process.waitFor()
     }
 }
 
