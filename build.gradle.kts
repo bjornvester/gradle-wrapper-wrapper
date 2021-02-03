@@ -13,6 +13,7 @@ repositories {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation(gradleApi())
 }
 
 graal {
@@ -32,6 +33,7 @@ graal {
     option("-R:MinHeapSize=2m")
     option("-R:MaxHeapSize=10m")
     option("-R:MaxNewSize=1m")
+    option("-H:IncludeResources='org/gradle/build-receipt\\.properties\$'") // Functionally unused, but still read and required by the GradleVersion class
 }
 
 tasks.withType<Wrapper> {
