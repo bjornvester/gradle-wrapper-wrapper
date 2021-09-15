@@ -32,8 +32,8 @@ jobs:
     - name: Cache the GraalVM distribution
       uses: actions/cache@v2
       with:
-        path: ~/.gradle/caches/com.palantir.graal/20.3.1
-        key: ${{ matrix.platform }}-graalvm-20.3.1
+        path: ~/.gradle/caches/com.palantir.graal/21.2.0
+        key: ${{ matrix.platform }}-graalvm-21.2.0
     - name: Build with Gradle (this action caches various parts as well)
       uses: eskatos/gradle-command-action@v1 # https://github.com/eskatos/gradle-command-action
       with:
@@ -65,6 +65,6 @@ jobs:
         with:
           draft: true
           files: "*.zip"
-          #fail_on_unmatched_files: true # Unreleased feature at this time
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

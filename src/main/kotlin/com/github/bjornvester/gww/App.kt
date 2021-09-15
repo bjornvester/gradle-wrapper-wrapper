@@ -111,7 +111,7 @@ private fun getGradleName() = if (isWindows()) "gradle.bat" else "gradle"
 
 private fun getGradleWrapperName() = if (isWindows()) "gradlew.bat" else "gradlew"
 
-private fun isWindows() = System.getProperty("os.name").toLowerCase().contains("windows")
+private fun isWindows() = System.getProperty("os.name").lowercase().contains("windows")
 
 private fun getVersionFromGradlePath(path: Path): GradleVersion? {
     val versionString = Regex("gradle-([\\d.]*)").matchEntire(path.fileName.toString())?.groupValues?.last()

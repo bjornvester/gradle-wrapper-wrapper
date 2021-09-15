@@ -2,12 +2,12 @@ import com.palantir.gradle.graal.ExtractGraalTask
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.4.21"
-    id("com.palantir.graal") version "0.7.2"
+    id("org.jetbrains.kotlin.jvm") version "1.5.0"
+    id("com.palantir.graal") version "0.9.0"
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -18,12 +18,12 @@ dependencies {
 
 graal {
     // See https://github.com/palantir/gradle-graal for options
-    graalVersion("20.3.1") // When updating this, remember also to update the cache key with the same value in .github/workflows/gradle.yml
+    graalVersion("21.2.0") // When updating this, remember also to update the cache key with the same value in .github/workflows/gradle.yml
     javaVersion("11")
     mainClass("com.github.bjornvester.gww.AppKt")
     outputName("gw")
 
-    if (getCurrentOperatingSystem().isWindows && getWindowsVsVarsPath().get() == "") {
+    if (getCurrentOperatingSystem().isWindows && windowsVsVarsPath.get() == "") {
         // Needed for some installations for Windows
         windowsVsEdition("BuildTools")
     }
@@ -37,7 +37,7 @@ graal {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "6.8"
+    gradleVersion = "7.2"
     distributionType = Wrapper.DistributionType.BIN
 }
 
@@ -50,7 +50,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         // Use the GraalVM distribution for compiling the Kotlin classes
         if (getCurrentOperatingSystem().isMacOsX) {
             // For some reason, GraalVM doesn't work on MacOS for compiling the Kotlin source code
-            // So in that case, use the same version version as Gradle
+            // So in that case, use the same version as Gradle
             // Of cause, we still use GraalVM to generate the final native image
             if (JavaVersion.current() < JavaVersion.VERSION_11) {
                 throw GradleException("This build must be run with Java 11 or higher")
