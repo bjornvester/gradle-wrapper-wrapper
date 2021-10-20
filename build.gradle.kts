@@ -2,7 +2,7 @@ import com.palantir.gradle.graal.ExtractGraalTask
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.5.0"
+    id("org.jetbrains.kotlin.jvm") version "1.6.0-RC"
     id("com.palantir.graal") version "0.9.0"
 }
 
@@ -18,8 +18,9 @@ dependencies {
 
 graal {
     // See https://github.com/palantir/gradle-graal for options
-    graalVersion("21.2.0") // When updating this, remember also to update the cache key with the same value in .github/workflows/gradle.yml
-    javaVersion("11")
+    graalVersion("21.3.0") // When updating this, remember also to update the cache key with the same value in .github/workflows/gradle.yml
+    //javaVersion("17") // Doesn't currently work as the plugin only accepts <= 16 at this moment
+    (javaVersion as Property<String>).set("17") // Workaround for the above problem
     mainClass("com.github.bjornvester.gww.AppKt")
     outputName("gw")
 
@@ -42,8 +43,10 @@ tasks.withType<Wrapper> {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    dependsOn("extractGraalTooling")
+
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     doFirst {
@@ -52,7 +55,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
             // For some reason, GraalVM doesn't work on MacOS for compiling the Kotlin source code
             // So in that case, use the same version as Gradle
             // Of cause, we still use GraalVM to generate the final native image
-            if (JavaVersion.current() < JavaVersion.VERSION_11) {
+            if (JavaVersion.current() < JavaVersion.VERSION_17) {
                 throw GradleException("This build must be run with Java 11 or higher")
             }
         } else {
@@ -64,7 +67,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
 val run by tasks.registering(JavaExec::class) {
     description = "Runs the application with the argument '--version'. Only used for quick testing."
-    main = "com.github.bjornvester.gww.AppKt"
+    mainClass.set("com.github.bjornvester.gww.AppKt")
     classpath = sourceSets["main"].runtimeClasspath
     args = listOf("--version")
 }
