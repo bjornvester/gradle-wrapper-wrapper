@@ -34,7 +34,9 @@ graal {
     option("-R:MinHeapSize=2m")
     option("-R:MaxHeapSize=10m")
     option("-R:MaxNewSize=1m")
-    option("-H:IncludeResources='org/gradle/build-receipt\\.properties\$'") // Functionally unused, but still read and required by the GradleVersion class
+    option("-H:-SpawnIsolates") // Reduces image size
+    option("-H:-UseServiceLoaderFeature") // Reduces image size
+    option("-H:IncludeResources=org/gradle/build-receipt\\.properties\$") // Functionally unused, but still read and required by the GradleVersion class
 }
 
 tasks.withType<Wrapper> {
