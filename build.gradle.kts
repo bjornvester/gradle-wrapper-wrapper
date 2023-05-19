@@ -1,9 +1,10 @@
-import com.palantir.gradle.graal.ExtractGraalTask
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
+import java.nio.file.Files
+import java.nio.file.Path
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.0-RC"
-    id("com.palantir.graal") version "0.9.0"
+    id("org.jetbrains.kotlin.jvm") version "1.8.21"
+    id("com.palantir.graal") version "0.12.0"
 }
 
 repositories {
@@ -18,15 +19,35 @@ dependencies {
 
 graal {
     // See https://github.com/palantir/gradle-graal for options
-    graalVersion("21.3.0") // When updating this, remember also to update the cache key with the same value in .github/workflows/gradle.yml
-    //javaVersion("17") // Doesn't currently work as the plugin only accepts <= 16 at this moment
-    (javaVersion as Property<String>).set("17") // Workaround for the above problem
+    graalVersion("22.3.2") // When updating this, remember also to update the cache key with the same value in .github/workflows/gradle.yml
+    javaVersion("17")
     mainClass("com.github.bjornvester.gww.AppKt")
     outputName("gw")
 
-    if (getCurrentOperatingSystem().isWindows && windowsVsVarsPath.get() == "") {
-        // Needed for some installations for Windows
-        windowsVsEdition("BuildTools")
+    if (getCurrentOperatingSystem().isWindows) {
+        if (windowsVsVarsPath.get() == "") {
+            // The plugin does not support newer versions of Visual Studio out-of-the-box, so add the information explicitly
+            windowsVsVersion("2022")
+            windowsVsEdition("BuildTools")
+            if (windowsVsVarsPath.get() == "") {
+                windowsVsEdition("Enterprise")
+                if (windowsVsVarsPath.get() == "") {
+                    var expectedPath = Path.of("C:\\Program Files\\Microsoft Visual Studio")
+                    if (!Files.exists(expectedPath)) {
+                        expectedPath = Path.of("C:\\Program Files (x86)\\Microsoft Visual Studio")
+                    }
+                    if (Files.exists(expectedPath) && Files.isDirectory(expectedPath)) {
+                        logger.warn("VS path not found. Content: {}", Files.list(expectedPath))
+                    } else {
+                        logger.warn("VS path not found.")
+                    }
+
+                    throw GradleException("Unable to locate a MSVS path - please check if the edition is supported")
+                }
+            }
+        }
+
+        logger.info("Using MSVS path: " + windowsVsVarsPath.get())
     }
 
     option("--install-exit-handlers")
@@ -40,30 +61,13 @@ graal {
 }
 
 tasks.withType<Wrapper> {
-    gradleVersion = "7.2"
+    gradleVersion = "latest"
     distributionType = Wrapper.DistributionType.BIN
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    dependsOn("extractGraalTooling")
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
-    doFirst {
-        // Use the GraalVM distribution for compiling the Kotlin classes
-        if (getCurrentOperatingSystem().isMacOsX) {
-            // For some reason, GraalVM doesn't work on MacOS for compiling the Kotlin source code
-            // So in that case, use the same version as Gradle
-            // Of cause, we still use GraalVM to generate the final native image
-            if (JavaVersion.current() < JavaVersion.VERSION_17) {
-                throw GradleException("This build must be run with Java 11 or higher")
-            }
-        } else {
-            val extractGraalTask = tasks.getByName("extractGraalTooling", ExtractGraalTask::class)
-            kotlinOptions.jdkHome = extractGraalTask.outputs.files.singleFile.absolutePath
-        }
+kotlin {
+    jvmToolchain {
+        version = JavaVersion.VERSION_17
     }
 }
 
