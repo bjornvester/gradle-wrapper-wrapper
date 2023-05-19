@@ -70,13 +70,14 @@ private fun findGradleFromWrapperDist(): Path? {
     val executablesMap: MutableMap<GradleVersion, Path> = mutableMapOf() // Gradle version to executable path
 
     if (Files.isDirectory(distsPath)) {
-        Files.list(distsPath).forEach { distPath ->
+        Files.list(distsPath).filter(Files::isDirectory).forEach { distPath ->
             // The distribution path should have a single folder inside (with an auto-generated name like 'dflktxzwamd4bv66q00iv4ga9'). Resolve it.
             val dirWithZipFile = Files.newDirectoryStream(distPath).toList().singleOrNull()
             if (dirWithZipFile != null && Files.isDirectory(dirWithZipFile)) {
                 // The zip folder should also have a single folder inside, but also some other elements (like the actual zip file)
                 // Note that, apparently, Gradle regularly cleans the folder containing the unzipped resources if unused, but leaves the zip file alone.
-                val realDistPath = Files.newDirectoryStream(dirWithZipFile).toList().singleOrNull { Files.isDirectory(it) }
+                val realDistPath =
+                    Files.newDirectoryStream(dirWithZipFile).toList().singleOrNull { Files.isDirectory(it) }
                 if (realDistPath != null) {
                     // Find the version number from the folder name
                     val version = getVersionFromGradlePath(realDistPath)

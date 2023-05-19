@@ -18,28 +18,30 @@ jobs:
     runs-on: ${{ matrix.platform }}
     
     steps:
-    - name: Add msbuild to PATH
-      if: ${{ matrix.platform == 'windows-latest' }}
-      uses: microsoft/setup-msbuild@v1 # https://github.com/marketplace/actions/setup-msbuild
+    - name: Configure build
+      uses: ilammy/msvc-dev-cmd@v1 # https://github.com/marketplace/actions/enable-developer-command-prompt
+      with:
+        vsversion: 2022
     - name: Checkout the repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3 # https://github.com/actions/checkout
     - name: Validate the Gradle wrapper
       uses: gradle/wrapper-validation-action@v1 # https://github.com/gradle/wrapper-validation-action
     - name: Set up JDK 17
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v3 # https://github.com/actions/setup-java
       with:
+        distribution: temurin
         java-version: 17
     - name: Cache the GraalVM distribution
-      uses: actions/cache@v2
+      uses: actions/cache@v3 # https://github.com/actions/cache
       with:
-        path: ~/.gradle/caches/com.palantir.graal/21.3.0
-        key: ${{ matrix.platform }}-graalvm-21.3.0
+        path: ~/.gradle/caches/com.palantir.graal/22.3.2
+        key: ${{ matrix.platform }}-graalvm-22.3.2
     - name: Build with Gradle (this action caches various parts as well)
-      uses: eskatos/gradle-command-action@v1 # https://github.com/eskatos/gradle-command-action
+      uses: gradle/gradle-build-action@v2 # https://github.com/gradle/gradle-build-action
       with:
         arguments: zipDistribution
     - name: Upload distribution
-      uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
+      uses: actions/upload-artifact@v3 # https://github.com/actions/upload-artifact
       with:
         name: gw
         path: build/distributions/gw*.zip
@@ -53,7 +55,7 @@ jobs:
     steps:
       - name: Download distrubutions
         id: download
-        uses: actions/download-artifact@v2 # https://github.com/actions/download-artifact
+        uses: actions/download-artifact@v3 # https://github.com/actions/download-artifact
         with:
           name: gw
       - name: Display structure of downloaded files

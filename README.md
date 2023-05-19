@@ -36,12 +36,19 @@ The project uses Gradle for building the wrapper, and GraalVM for creating a nat
 
 The requirements for Gradle is just a compatible JDK:
 
-1. Install a [Java Development Kit](https://adoptopenjdk.net/) version 11. Note that you can use any version that is compatible with the version of Gradle used
-   by the project (so JDK 8 or 14 should be fine too, except maybe for MacOS where you need 11 or higher).
+1. Install a [Java Development Kit](https://adoptium.net/) version 17. Note that you can use any version that is compatible with the version of Gradle used
+   by the project (so JDK 11 or 20 should be fine too, though not tested by me).
 2. Set the environment variable `JAVA_HOME` to point to where you installed the JDK (if this isn't done already).
 
 While GraalVM itself is downloaded automatically as part of the build, it requires a local toolchain. For Linux, you need glibc and for Windows a version of
 MSVS. See the [GraalVM installation guide](https://www.graalvm.org/reference-manual/native-image/) for help.
+
+#### Windows
+
+For Windows specifically, the build is configured for a particular version of MSVS.
+Download and install Tools for Visual Studio from https://visualstudio.microsoft.com/downloads/?q=build+tools.
+The version needs to correspond to the one specified in the build.gradle.kts file.
+During installation, chose the "Desktop development with C++" component.
 
 ### Building it
 
@@ -52,6 +59,6 @@ or `gw.exe` (depending on the platform).
 
 Contributions are welcome.
 
-If you create a PR, Github will automatically try to build it.
+If you create a PR, GitHub will automatically try to build it.
 
 Note that there are no unit tests for the project at the moment though.
